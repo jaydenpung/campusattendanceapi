@@ -8,7 +8,10 @@ var con = mysql.createConnection({
 
 con.connect(function(err) {
   if (err) throw err;
-  console.log("DB Connected!");
+  con.query("Use campusattendance", function (err, result) {
+    if (err) throw err;
+    console.log("DB Connected!");
+  });
 });
 
 export default con;
