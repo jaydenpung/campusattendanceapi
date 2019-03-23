@@ -1,5 +1,8 @@
 {
     "opts": {
         "template": "docdash"
+    },
+    "source": {
+        "exclude": [ "docdash" ]
     }
 }
