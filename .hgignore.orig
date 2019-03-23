@@ -1,0 +1,8 @@
+syntax: glob
+
+node_modules/*
+db/db.js
+out/*
+docdash/*
+.jsdoc.json
+
