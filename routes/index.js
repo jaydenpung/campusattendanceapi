@@ -6,8 +6,7 @@ import config from '../config/config';
 
 const router = express.Router();
 
-/** @function */
-/** Check if the user is already logged in. */
+//Check if the user is already logged in.
 function authenticated (req, res, next) {
 	var token = req.body.authenticationObject.token;
 
@@ -23,5 +22,8 @@ function authenticated (req, res, next) {
 
 router.get('/api/v1/auth/login', AuthController.login);
 router.get('/api/v1/mobileapi/getProfile', authenticated, MobileApiController.getProfile);
+router.put('/api/v1/mobileapi/updateProfile', authenticated, MobileApiController.updateProfile);
+router.get('/api/v1/mobileapi/getTimetable', authenticated, MobileApiController.getTimetable);
+router.get('/api/v1/mobileapi/getLesson', authenticated, MobileApiController.getLesson);
 
 export default router;

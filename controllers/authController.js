@@ -8,6 +8,10 @@ class AuthController {
 
   /**
    * Login and get an authentication token.
+   * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @return {boolean} success - Indicate succesful action
+   * @return {object} data - A data packet that can contain different form of objects
+   * @return {string} data.token - A generated authentication token
    */
   login(req, res) {
     var authObject = req.body.authenticationObject;
@@ -31,10 +35,10 @@ class AuthController {
           expiresIn: 86400 // expires in 24 hours
         });
 
-        res.status(200).send({ authenticated: true, token: token });
+        res.status(200).send({ success: true, data: token });
       }
       else {
-        res.status(200).send({ authenticated: false });
+        res.status(200).send({ success: false });
       }
     });
   }
