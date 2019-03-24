@@ -1,29 +1,18 @@
 import express from 'express';
 import MobileApiController from '../controllers/mobileApiController';
-import AuthController from '../controllers/authController';
-import jwt from 'jsonwebtoken';
-import config from '../config/config';
+import HelperController from '../controllers/helperController';
 
 const router = express.Router();
 
-//Check if the user is already logged in.
-function authenticated (req, res, next) {
-	var token = req.body.authenticationObject.token;
+router.get('/api/v1/auth/login', MobileApiController.login);
+router.get('/api/v1/mobileapi/getProfile', HelperController.authenticated, MobileApiController.getProfile);
+router.get('/api/v1/mobileapi/getTimetable', HelperController.authenticated, MobileApiController.getTimetable);
+router.get('/api/v1/mobileapi/getLesson', HelperController.authenticated, MobileApiController.getLesson);
+router.get('/api/v1/mobileapi/getSubjectAttendance', HelperController.authenticated, MobileApiController.getSubjectAttendance);
+router.get('/api/v1/mobileapi/getNotifiationList', HelperController.authenticated, MobileApiController.getNotifiationList);
 
-	jwt.verify(token, config.secret, function(err, decoded) {
-    	if (!err) {
-    		return next();
-    	}
-    	else {
-    		res.status(200).send({ error: "TOKEN_EXPIRED" });
-    	}
-	});
-};
-
-router.get('/api/v1/auth/login', AuthController.login);
-router.get('/api/v1/mobileapi/getProfile', authenticated, MobileApiController.getProfile);
-router.put('/api/v1/mobileapi/updateProfile', authenticated, MobileApiController.updateProfile);
-router.get('/api/v1/mobileapi/getTimetable', authenticated, MobileApiController.getTimetable);
-router.get('/api/v1/mobileapi/getLesson', authenticated, MobileApiController.getLesson);
+router.put('/api/v1/mobileapi/updateProfile', HelperController.authenticated, MobileApiController.updateProfile);
+router.put('/api/v1/mobileapi/generateLessonAttendanceQrCode', HelperController.authenticated, MobileApiController.generateLessonAttendanceQrCode);
+router.put('/api/v1/mobileapi/updateLessonAttendance', HelperController.authenticated, MobileApiController.updateLessonAttendance);
 
 export default router;
