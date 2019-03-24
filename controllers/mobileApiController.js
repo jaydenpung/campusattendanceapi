@@ -3,6 +3,7 @@ import dbConnection from '../db/db';
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
 import crypto from 'crypto';
+import HelperController from '../controllers/helperController';
 
 /** Class handling mobile api. */
 class MobileApiController {
@@ -375,6 +376,61 @@ class MobileApiController {
       }
       else {
         res.status(200).send({ success: true, data: result });
+      }
+    });
+  }
+
+  /**
+   * PUT - Send notification to list of students related.
+   * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @param {string} message - Message to be sent
+   * @param {int} [lesson_id] - If specified, send notification to all student assigned to this lesson
+   * @param {int} [subject_id] - If specified, send notification to all student assigned to lesson with this subject
+   * @return {boolean} success - Indicate succesful action
+   */
+  createNotification(req, res, next) {
+    var sql = "";
+    var data = req.body;
+    var authObject = data.authenticationObject;
+
+    sql = "INSERT INTO notification (version, date_time, message, student_id, sender_id)";
+
+    if (data.subject_id ) {
+      sql += " SELECT DISTINCT 0, NOW(), '" + data.message + "', std.id , s.id FROM staff s";
+      sql += " left join subject sbj on sbj.id = " + data.subject_id;
+      sql += " left join lesson l on l.subject_id = sbj.id";
+      sql += " left join lesson_attendance att on att.lesson_id = l.id";
+      sql += " left join student std on att.student_id = std.id";
+      sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
+
+      sql += " SELECT DISTINCT std.unique_messaging_id FROM staff s";
+      sql += " left join subject sbj on sbj.id = " + data.subject_id;
+      sql += " left join lesson l on l.subject_id = sbj.id";
+      sql += " left join lesson_attendance att on att.lesson_id = l.id";
+      sql += " left join student std on att.student_id = std.id";
+      sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
+    }
+    else if (data.lesson_id) {
+      sql += " SELECT DISTINCT 0, NOW(), '" + data.message + "', std.id , s.id FROM staff s";
+      sql += " left join lesson_attendance att on att.lesson_id = " + data.lesson_id;
+      sql += " left join student std on att.student_id = std.id";
+      sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
+
+      sql += " SELECT DISTINCT std.unique_messaging_id FROM staff s";
+      sql += " left join lesson_attendance att on att.lesson_id = " + data.lesson_id;
+      sql += " left join student std on att.student_id = std.id";
+      sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
+    }
+
+    dbConnection.query(sql, function (err, result) {
+
+      if (err) {
+        res.status(200).send({ success: false });
+        throw err;
+      }
+      else {
+        res.status(200).send({ success: true });
+        HelperController.sendPushNotification(result[1]);
       }
     });
   }

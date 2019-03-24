@@ -22,6 +22,16 @@ class HelperController {
    	});
 	}
 
+	/**
+   * Send push notification to given unique messaging ids
+   * @param {List<obj>} umiData - Use umiData.unique_messaing_id to get int value
+   */
+	sendPushNotification(umiData) {
+		umiData.forEach(function(item, index) {
+		  //sendToId(item.unique_messaging_id);
+		});
+	}
+
 }
 
 const helperController = new HelperController();
