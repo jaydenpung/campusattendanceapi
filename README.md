@@ -23,7 +23,9 @@
     * __routes/index.js__ - This is where the app decide which api calls goes to which functions  
     * __controllers/helperController.js__ - Contain utility function  
     * __controllers/mobileApiController.js__ - This is the code that handles the workload when api calls are made  
+    * Every API call except __login__ requires api token. Get the postman collection in the link below, run the __login__ api call to get a 24 hour token. Use this token to replace the old token in other api call in the collection
     * For more details, check out the documentation
 
     ### [CLICK HERE FOR DOCUMENTATION](http://37.247.116.48/campusattendanceapi/)
+    ### [CLICK HERE FOR POSTMAN COLLECTION](https://www.getpostman.com/collections/0e4aef6ab608ff0139f2)
     
