@@ -357,15 +357,16 @@ class MobileApiController {
     var authObject = data.authenticationObject;
 
     if (authObject.userType == "student") {
-      sql = "select date_time, s.name as sender_name, message from notification n";
+      sql = "select date_time, IF(s.id is not null, s.name, 'SYSTEM') as sender_name, message from notification n";
       sql += " left join staff s ON s.id = n.sender_id";
       sql += " left join student std ON std.id = n.student_id";
       sql += " WHERE std.student_id='" + authObject.userId + "'";
     }
     else if (authObject.userType == "staff") {
-      sql = "select date_time, s.name as sender_name, message from notification n";
+      sql = "select DISTINCT date_time, IF(s.id is not null, s.name, 'SYSTEM') as sender_name, message from notification n";
       sql += " left join staff s ON s.id = n.sender_id";
       sql += " WHERE s.staff_id='" + authObject.userId + "'";
+      sql += " OR n.sender_id is null";
     }
 
     dbConnection.query(sql, function (err, result) {
@@ -384,6 +385,7 @@ class MobileApiController {
    * PUT - Send notification to list of students related.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @param {string} message - Message to be sent
+   * @param {int} [student_id_list] - If specified, send notification to all student given in the list
    * @param {int} [lesson_id] - If specified, send notification to all student assigned to this lesson
    * @param {int} [subject_id] - If specified, send notification to all student assigned to lesson with this subject
    * @return {boolean} success - Indicate succesful action
@@ -393,9 +395,17 @@ class MobileApiController {
     var data = req.body;
     var authObject = data.authenticationObject;
 
-    sql = "INSERT INTO notification (version, date_time, message, student_id, sender_id)";
+    if (data.student_id_list) {
+      var student_id_list = data.student_id_list.map(String);
+      sql = "INSERT INTO notification (version, date_time, message, student_id)";
+      sql += " SELECT 0, NOW(), '" + data.message + "', id FROM student";
+      sql += " WHERE id in (" + student_id_list + ");"
 
-    if (data.subject_id ) {
+      sql += " SELECT DISTINCT unique_messaging_id FROM student";
+      sql += " WHERE id in (" + student_id_list + ")";
+    }
+    else if (data.subject_id ) {
+      sql = "INSERT INTO notification (version, date_time, message, student_id, sender_id)";
       sql += " SELECT DISTINCT 0, NOW(), '" + data.message + "', std.id , s.id FROM staff s";
       sql += " left join subject sbj on sbj.id = " + data.subject_id;
       sql += " left join lesson l on l.subject_id = sbj.id";
@@ -411,6 +421,7 @@ class MobileApiController {
       sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
     }
     else if (data.lesson_id) {
+      sql = "INSERT INTO notification (version, date_time, message, student_id, sender_id)";
       sql += " SELECT DISTINCT 0, NOW(), '" + data.message + "', std.id , s.id FROM staff s";
       sql += " left join lesson_attendance att on att.lesson_id = " + data.lesson_id;
       sql += " left join student std on att.student_id = std.id";
@@ -434,6 +445,7 @@ class MobileApiController {
       }
     });
   }
+
 }
 
 const mobileApiController = new MobileApiController();
