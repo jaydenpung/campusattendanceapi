@@ -191,6 +191,7 @@ class MobileApiController {
   /**
    * GET - Get the details of a lesson
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @param {string} lessonid - Id of the lesson to be fetched
    * @return {boolean} success - Indicate succesful action
    * @return {List<object>} data - A data packet that can contain different form of objects
    * @return {Date} data.date_time - Date and time of the lesson
@@ -280,6 +281,7 @@ class MobileApiController {
   /**
    * PUT - Generate random 64 bit key for a lesson. If already generated before, return the previously generated string.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @param {int} lesson_id - Id of the lesson to generate qr code
    * @return {boolean} success - Indicate succesful action
    * @return {object} data - A data packet that can contain different form of objects
    * @return {string} data.qr_key_string - The generated qr key string
@@ -311,6 +313,7 @@ class MobileApiController {
   /**
    * PUT - Mark the lesson attedance of given student if qr_key_string matched. Return error if user does not belong to lesson.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @param {string} qr_key_string - Qr code for the lesson
    * @return {boolean} success - Indicate succesful action
    * @return {string} [error] - Indicate user is not in the given class
    */
@@ -385,7 +388,7 @@ class MobileApiController {
    * PUT - Send notification to list of students related.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @param {string} message - Message to be sent
-   * @param {int} [student_index_id_list] - If specified, send notification to all student given in the list
+   * @param {int} [student_id_list] - If specified, send notification to all student given in the list
    * @param {int} [lesson_id] - If specified, send notification to all student assigned to this lesson
    * @param {int} [subject_id] - If specified, send notification to all student assigned to lesson with this subject
    * @return {boolean} success - Indicate succesful action
