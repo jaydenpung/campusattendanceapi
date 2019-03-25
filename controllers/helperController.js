@@ -7,7 +7,6 @@ import config from '../config/config';
 class HelperController {
 
   handleCorsPreflight(req, res, next) {
-    console.log("dada");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
     res.header("Access-Control-Allow-Methods", "PUT");
