@@ -4,6 +4,9 @@ import HelperController from '../controllers/helperController';
 
 const router = express.Router();
 
+//For cross domain api request
+router.all('/api/v1/mobileapi/createNotification', HelperController.handleCorsPreflight);
+
 router.get('/api/v1/auth/login', MobileApiController.login);
 router.get('/api/v1/mobileapi/getProfile', HelperController.authenticated, MobileApiController.getProfile);
 router.get('/api/v1/mobileapi/getTimetable', HelperController.authenticated, MobileApiController.getTimetable);

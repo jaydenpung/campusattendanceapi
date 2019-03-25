@@ -385,7 +385,7 @@ class MobileApiController {
    * PUT - Send notification to list of students related.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @param {string} message - Message to be sent
-   * @param {int} [student_id_list] - If specified, send notification to all student given in the list
+   * @param {int} [student_index_id_list] - If specified, send notification to all student given in the list
    * @param {int} [lesson_id] - If specified, send notification to all student assigned to this lesson
    * @param {int} [subject_id] - If specified, send notification to all student assigned to lesson with this subject
    * @return {boolean} success - Indicate succesful action
