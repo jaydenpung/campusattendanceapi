@@ -9,7 +9,7 @@ import HelperController from '../controllers/helperController';
 class MobileApiController {
 
   /**
-   * GET - Login and get an authentication token.
+   * PUT - Login and get an authentication token.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @return {boolean} success - Indicate succesful action
    * @return {object} data - A data packet that can contain different form of objects
@@ -46,7 +46,7 @@ class MobileApiController {
   }
 
   /**
-   * GET - Return staff/student profile information.
+   * PUT - Return staff/student profile information.
    * @param {AuthenticationObject} authenticationObject - Consist of userId, userType, and token, all in string type
    * @return {boolean} success - Indicate succesful action
    * @return {object} data - A data packet that can contain different form of objects
@@ -140,7 +140,7 @@ class MobileApiController {
   }
 
   /**
-   * GET - Get the list of lessons for a specified date range
+   * PUT - Get the list of lessons for a specified date range
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @param {epoch} [dateTime] - Date filer to only show lessons for specified date
    * @return {boolean} success - Indicate succesful action
@@ -189,7 +189,7 @@ class MobileApiController {
   }
 
   /**
-   * GET - Get the details of a lesson
+   * PUT - Get the details of a lesson
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @param {string} lessonid - Id of the lesson to be fetched
    * @return {boolean} success - Indicate succesful action
@@ -235,7 +235,7 @@ class MobileApiController {
   }
 
   /**
-   * GET - Return list of subject and attendance percentage for each subject if user is student. Return list of subject, with a list of student and their attendance percentage for each subjct if user is staff.
+   * PUT - Return list of subject and attendance percentage for each subject if user is student. Return list of subject, with a list of student and their attendance percentage for each subjct if user is staff.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @return {boolean} success - Indicate succesful action
    * @return {List<object>} data - A data packet that can contain different form of objects
@@ -346,7 +346,7 @@ class MobileApiController {
   }
 
   /**
-   * GET - Get the list of notification related to user.
+   * PUT - Get the list of notification related to user.
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @return {boolean} success - Indicate succesful action
    * @return {object} List<data> - A data packet that can contain different form of objects
