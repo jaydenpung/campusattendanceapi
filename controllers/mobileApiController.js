@@ -14,18 +14,18 @@ class MobileApiController {
    * @return {boolean} success - Indicate succesful action
    * @return {object} data - A data packet that can contain different form of objects
    * @return {string} data.token - A generated authentication token
+   * @return {string} data.name - Name of the user
    */
   login(req, res) {
     var authObject = req.body.authenticationObject;
     var password = req.body.password;
     var sql;
-
     //check if user and password match
     if (authObject.userType == "student") {
-      sql = "SELECT * FROM student WHERE student_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
+      sql = "SELECT name FROM student WHERE student_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
     }
     else if (authObject.userType == "staff") {
-      sql = "SELECT * FROM staff WHERE staff_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
+      sql = "SELECT name FROM staff WHERE staff_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
     }
 
     dbConnection.query(sql, function (err, result) {
@@ -37,7 +37,7 @@ class MobileApiController {
           expiresIn: 86400 // expires in 24 hours
         });
 
-        res.status(200).send({ success: true, data: token });
+        res.status(200).send({ success: true, data: {token: token, name: result[0].name} });
       }
       else {
         res.status(200).send({ success: false });
@@ -88,6 +88,7 @@ class MobileApiController {
    * @param {string} name - New Name of the user
    * @param {int} age - New Age of the user
    * @param {string} email - New Email of the user
+   * @param {string} address - New Address of the user
    * @param {string} ic_number - New IC Number of the user
    * @param {string} telephone_number - New Telephone Number of the user
    * @param {string} [password] - New Password of the user
@@ -114,7 +115,7 @@ class MobileApiController {
     sql += " ic_number='" + data.ic_number + "',";
     sql += " telephone_number='" + data.telephone_number + "'";
 
-    if (data.password) {
+    if (data.password && data.password != "") {
       sql += " ,password=TO_BASE64('" + data.password + "')";
     }
 
@@ -146,6 +147,7 @@ class MobileApiController {
    * @return {boolean} success - Indicate succesful action
    * @return {List<object>} data - A data packet that can contain different form of objects
    * @return {string} data.lesson_id - Id of lesson
+   * @return {string} data.subject_id - Id of subject
    * @return {Date} data.date_time - Date and time of lesson
    * @return {string} data.subject_name - Name of the subject to be taught in the lesson
    * @return {string} [data.staff_name] - Name of the staff teaching the lesson if user is student
@@ -156,7 +158,7 @@ class MobileApiController {
     var authObject = data.authenticationObject;
 
     if (authObject.userType == "student") {
-      sql = "SELECT l.id as lesson_id, date_time, subject_name, s.name as staff_name FROM lesson l";
+      sql = "SELECT l.id as lesson_id, sbj.id as subject_id, DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, subject_name, s.name as staff_name FROM lesson l";
       sql += " left join staff s ON l.staff_id=s.id";
       sql += " left join lesson_attendance att ON l.id=att.lesson_id";
       sql += " left join student std ON att.student_id=std.id";
@@ -164,7 +166,7 @@ class MobileApiController {
       sql += " WHERE std.student_id='" + authObject.userId + "'";
     }
     else if (authObject.userType == "staff") {
-      sql = "SELECT l.id as lesson_id, date_time, subject_name FROM lesson l";
+      sql = "SELECT l.id as lesson_id, sbj.id as subject_id, DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, subject_name FROM lesson l";
       sql += " left join staff s ON l.staff_id=s.id";
       sql += " left join subject sbj ON l.subject_id=sbj.id";
       sql += " WHERE s.staff_id='" + authObject.userId + "'";
@@ -191,7 +193,7 @@ class MobileApiController {
   /**
    * PUT - Get the details of a lesson
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
-   * @param {string} lessonid - Id of the lesson to be fetched
+   * @param {string} lessonId - Id of the lesson to be fetched
    * @return {boolean} success - Indicate succesful action
    * @return {List<object>} data - A data packet that can contain different form of objects
    * @return {Date} data.date_time - Date and time of the lesson
@@ -207,7 +209,7 @@ class MobileApiController {
 
     //IF(att.attended=1, 1, 0) is required for mysql because boolean is stored as bit
     if (authObject.userType == "student") {
-      sql = "select l.date_time, s.subject_name, stf.name as staff_name, IF(att.attended=1, 1, 0) as attended from lesson l";
+      sql = "select  DATE_FORMAT(l.date_time,'%d/%m/%Y %h:%i %p') as date_time, s.subject_name, stf.name as staff_name, IF(att.attended=1, 1, 0) as attended from lesson l";
       sql += " left join subject s on l.subject_id=s.id";
       sql += " left join staff stf on l.staff_id=stf.id";
       sql += " left join lesson_attendance att on l.id = att.lesson_id";
@@ -215,7 +217,7 @@ class MobileApiController {
       sql += " WHERE l.id='" + data.lessonId + "' AND std.student_id='" + authObject.userId + "'";
     }
     else if (authObject.userType == "staff") {
-      sql = "select l.date_time, s.subject_name, stf.name as staff_name, std.name as student_name, IF(att.attended=1, 1, 0) as attended from lesson l";
+      sql = "select  DATE_FORMAT(l.date_time,'%d/%m/%Y %h:%i %p') as date_time, s.subject_name, stf.name as staff_name, std.name as student_name, IF(att.attended=1, 1, 0) as attended from lesson l";
       sql += " left join subject s on l.subject_id=s.id";
       sql += " left join staff stf on l.staff_id=stf.id";
       sql += " left join lesson_attendance att on l.id = att.lesson_id";
@@ -354,23 +356,24 @@ class MobileApiController {
    * @return {string} data.sender_name - Name of the staff who created the notification
    * @return {string} data.message - Message of the notification
    */
-  getNotifiationList(req, res) {
+  getNotificationList(req, res) {
     var sql = "";
     var data = req.body;
     var authObject = data.authenticationObject;
 
     if (authObject.userType == "student") {
-      sql = "select date_time, IF(s.id is not null, s.name, 'SYSTEM') as sender_name, message from notification n";
+      sql = "select DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, IF(s.id is not null, s.name, 'SYSTEM') as sender_name, message from notification n";
       sql += " left join staff s ON s.id = n.sender_id";
       sql += " left join student std ON std.id = n.student_id";
       sql += " WHERE std.student_id='" + authObject.userId + "'";
     }
     else if (authObject.userType == "staff") {
-      sql = "select DISTINCT date_time, IF(s.id is not null, s.name, 'SYSTEM') as sender_name, message from notification n";
+      sql = "select DISTINCT DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, IF(s.id is not null, s.name, 'SYSTEM') as sender_name, message from notification n";
       sql += " left join staff s ON s.id = n.sender_id";
       sql += " WHERE s.staff_id='" + authObject.userId + "'";
       sql += " OR n.sender_id is null";
     }
+    sql += " ORDER BY date_time desc"
 
     dbConnection.query(sql, function (err, result) {
       
