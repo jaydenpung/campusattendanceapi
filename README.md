@@ -3,7 +3,8 @@
 * Setup
     1. Install latest npm and nodejs, mysql
     2. `npm install` to install all dependencies
-    3. Rename __db.template.js__ to __db.js__, and replace the user and password for mysql connection
+    3. Rename __db/db.template.js__ to __db/db.js__, and replace the user and password for mysql connection
+    3. Rename __config/serviceAccountKey.template.json__ to __config/serviceAccountKey.json__, and replace the keys based on FCM
     4. `npm run forever` to deploy to port 5000
     5. `npm run generate-docs` to generate documentation, output in __out/campusattendanceapi/1.0.0__
     
