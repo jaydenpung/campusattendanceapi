@@ -3,3 +3,4 @@ syntax: glob
 node_modules/*
 db/db.js
 out/*
+config/serviceAccountKey.json

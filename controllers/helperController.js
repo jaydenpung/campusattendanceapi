@@ -2,6 +2,8 @@
 import dbConnection from '../db/db';
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
+import admin from 'firebase-admin';
+import serviceAccount from '../config/serviceAccountKey.json';
 
 /** An utility class providing some functionality. */
 class HelperController {
@@ -31,15 +33,47 @@ class HelperController {
 
 	/**
    * Send push notification to given unique messaging ids
-   * @param {List<obj>} umiData - Use umiData.unique_messaing_id to get int value
+   * @param {List<obj>} umiData - Use umiData.unique_messaging_id to get int value
+   * @param message - Body of notification to be sent
    */
-	sendPushNotification(umiData) {
-		umiData.forEach(function(item, index) {
-		  //sendToId(item.unique_messaging_id);
-		});
-	}
+	sendPushNotification(umiData, message) {
+		try {
+			admin.initializeApp({
+				  credential: admin.credential.cert(serviceAccount),
+				  databaseURL: ""
+				});
+		}
+		catch (ex) {
+		}
 
+		var registrationTokens = [];
+		umiData.forEach(function(item) {
+			registrationTokens.push(item.unique_messaging_id);
+		});
+		
+
+		var payload = {
+			notification: {
+				title: "You have new Message",
+				body: message,
+				sound: "default"
+			}
+		};
+
+		var options = {
+			priority: "high",
+			timeToLive: 60 * 60 *24
+		};
+
+		admin.messaging().sendToDevice(registrationTokens, payload, options)
+		.then(function(response) {
+		})
+		.catch(function(error) {
+			console.log("Error sending message:", error);
+		});
+  }
 }
 
 const helperController = new HelperController();
 export default helperController;
+

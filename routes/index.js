@@ -18,5 +18,6 @@ router.put('/api/v1/mobileapi/updateProfile', HelperController.authenticated, Mo
 router.put('/api/v1/mobileapi/generateLessonAttendanceQrCode', HelperController.authenticated, MobileApiController.generateLessonAttendanceQrCode);
 router.put('/api/v1/mobileapi/updateLessonAttendance', HelperController.authenticated, MobileApiController.updateLessonAttendance);
 router.put('/api/v1/mobileapi/createNotification', HelperController.authenticated, MobileApiController.createNotification);
+router.put('/api/v1/mobileapi/updateDeviceToken', HelperController.authenticated, MobileApiController.updateDeviceToken);
 
 export default router;

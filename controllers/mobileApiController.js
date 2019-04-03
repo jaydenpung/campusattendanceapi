@@ -22,10 +22,10 @@ class MobileApiController {
     var sql;
     //check if user and password match
     if (authObject.userType == "student") {
-      sql = "SELECT name FROM student WHERE student_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
+      sql = "SELECT name, unique_messaging_id FROM student WHERE student_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
     }
     else if (authObject.userType == "staff") {
-      sql = "SELECT name FROM staff WHERE staff_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
+      sql = "SELECT name, unique_messaging_id FROM staff WHERE staff_id='" + authObject.userId + "' AND password=TO_BASE64('" + password +"')";
     }
 
     dbConnection.query(sql, function (err, result) {
@@ -37,7 +37,7 @@ class MobileApiController {
           expiresIn: 86400 // expires in 24 hours
         });
 
-        res.status(200).send({ success: true, data: {token: token, name: result[0].name} });
+        res.status(200).send({ success: true, data: {token: token, name: result[0].name, unique_messaging_id: result[0].unique_messaging_id} });
       }
       else {
         res.status(200).send({ success: false });
@@ -408,7 +408,7 @@ class MobileApiController {
       sql += " WHERE id in (" + student_id_list + ");"
 
       sql += " SELECT DISTINCT unique_messaging_id FROM student";
-      sql += " WHERE id in (" + student_id_list + ")";
+      sql += " WHERE unique_messaging_id <> '' AND id in (" + student_id_list + ")";
     }
     else if (data.subject_id ) {
       sql = "INSERT INTO notification (version, date_time, message, student_id, sender_id)";
@@ -424,7 +424,7 @@ class MobileApiController {
       sql += " left join lesson l on l.subject_id = sbj.id";
       sql += " left join lesson_attendance att on att.lesson_id = l.id";
       sql += " left join student std on att.student_id = std.id";
-      sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
+      sql += " WHERE std.unique_messaging_id <> '' AND std.id is not null AND s.staff_id='" + authObject.userId + "';";
     }
     else if (data.lesson_id) {
       sql = "INSERT INTO notification (version, date_time, message, student_id, sender_id)";
@@ -436,7 +436,7 @@ class MobileApiController {
       sql += " SELECT DISTINCT std.unique_messaging_id FROM staff s";
       sql += " left join lesson_attendance att on att.lesson_id = " + data.lesson_id;
       sql += " left join student std on att.student_id = std.id";
-      sql += " WHERE std.id is not null AND s.staff_id='" + authObject.userId + "';";
+      sql += " WHERE std.unique_messaging_id <> '' AND std.id is not null AND s.staff_id='" + authObject.userId + "';";
     }
 
     dbConnection.query(sql, function (err, result) {
@@ -447,7 +447,45 @@ class MobileApiController {
       }
       else {
         res.status(200).send({ success: true });
-        HelperController.sendPushNotification(result[1]);
+        HelperController.sendPushNotification(result[1], data.message);
+      }
+    });
+  }
+  
+  /**
+   * PUT - Update unique messaging id of user for push notification.
+   * @param {AuthenticationObject} authenticationObject - Consist of userId, userType, and token, all in string type
+   * @param {string} deviceToken - Unique messaging id for push notification
+   * @return {boolean} success - Indicate succesful action
+   */
+  updateDeviceToken(req, res) {
+    var sql = "";
+    var data = req.body;
+    var authObject = data.authenticationObject;
+
+    if (authObject.userType == "student") {
+	  sql += "UPDATE student set unique_messaging_id ='' where unique_messaging_id='" + data.deviceToken + "' AND student_id<>'" + authObject.userId + "';"
+	  sql += "UPDATE staff set unique_messaging_id ='' where unique_messaging_id='" + data.deviceToken + "' AND staff_id<>'" + authObject.userId + "';"
+      sql += "UPDATE student set unique_messaging_id='" + data.deviceToken + "' WHERE student_id='" + authObject.userId + "';"
+    }
+    else if (authObject.userType == "staff") {
+	  sql += "UPDATE staff set unique_messaging_id ='' where unique_messaging_id='" + data.deviceToken + "' AND staff_id<>'" + authObject.userId + "';"
+	  sql += "UPDATE student set unique_messaging_id ='' where unique_messaging_id='" + data.deviceToken + "' AND student_id<>'" + authObject.userId + "';"
+      sql += "UPDATE staff set unique_messaging_id='" + data.deviceToken + "' WHERE staff_id='" + authObject.userId + "';"
+    }
+
+    dbConnection.query(sql, function (err, result) {
+      if (err) {
+        res.status(200).send({ success: false });
+        throw err;
+      }
+      else {
+		if (!result.affectedRows) {
+			res.status(200).send({ success: false});
+		}
+		else {
+			res.status(200).send({ success: true });
+		}
       }
     });
   }
@@ -456,3 +494,4 @@ class MobileApiController {
 
 const mobileApiController = new MobileApiController();
 export default mobileApiController;
+
