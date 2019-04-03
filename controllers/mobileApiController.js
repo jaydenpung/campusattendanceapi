@@ -257,6 +257,7 @@ class MobileApiController {
       sql += " left join subject sbj ON l.subject_id=sbj.id";
       sql += " left join staff stf ON l.staff_id=stf.id";
       sql += " WHERE s.student_id='" + authObject.userId + "'";
+      sql += " AND l.date_time <= now()";
       sql += " GROUP BY sbj.subject_name";
     }
     else if (authObject.userType == "staff") {
@@ -266,6 +267,7 @@ class MobileApiController {
       sql += " left join subject sbj ON l.subject_id=sbj.id";
       sql += " left join staff stf ON l.staff_id=stf.id";
       sql += " WHERE stf.staff_id='" + authObject.userId + "'";
+      sql += " AND l.date_time <= now()";
       sql += " GROUP BY sbj.subject_name, s.id, s.name";
     }
 
