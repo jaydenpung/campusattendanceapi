@@ -493,9 +493,53 @@ class MobileApiController {
       }
     });
   }
+  
+  /**
+   * PUT - Get the subject attendance in timetable structure, for student only.
+   * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @param {string} subject_id - Id of the subject to retrieve timetable
+   * @return {boolean} success - Indicate succesful action
+   * @return {object} List<data> - A data packet that can contain different form of objects
+   * @return {string} data.subject_name - Name of the timetable subject
+   * @return {string} data.week - Which week each lesson is on (earliest lesson will be week 1, Monday as the start of a week)
+   * @return {string} data.date_time - Date time of the lesson
+   * @return {string} data.staff_name - Lecturer assigned to the lesson
+   * @return {string} data.attended - 1 to indicate student attended the lesson, 0 to indicate absence
+   */
+  getSubjectTimetable(req, res) {
+    var sql = "";
+    var data = req.body;
+    var authObject = data.authenticationObject;
+
+    if (authObject.userType == "student") {
+      sql = "select @minweekbal := min(week(date_time)) - 1 from lesson;";
+      sql += " select week(date_time) - @minweekbal as week, DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, s.subject_name, stf.name as staff_name, cast(att.attended as unsigned) as attended";
+      sql += " from lesson l";
+      sql += " left join subject s on s.id = l.subject_id";
+	  sql += " left join staff stf on stf.id = l.staff_id";
+	  sql += " left join lesson_attendance att on att.lesson_id = l.id";
+	  sql += " left join student std on std.id = att.student_id";
+	  sql += " WHERE std.student_id = '" + authObject.userId + "' AND s.id = '" + data.subject_id + "'";
+    }
+    else if (authObject.userType == "staff") {
+    }
+    sql += " ORDER BY l.date_time;";
+
+    dbConnection.query(sql, function (err, result) {
+      
+      if (err) {
+        res.status(200).send({ success: false });
+        throw err;
+      }
+      else {
+        res.status(200).send({ success: true, data: result });
+      }
+    });
+  }
 
 }
 
 const mobileApiController = new MobileApiController();
 export default mobileApiController;
+
 
