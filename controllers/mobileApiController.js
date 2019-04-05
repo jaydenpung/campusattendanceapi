@@ -151,6 +151,7 @@ class MobileApiController {
    * @return {Date} data.date_time - Date and time of lesson
    * @return {string} data.subject_name - Name of the subject to be taught in the lesson
    * @return {string} [data.staff_name] - Name of the staff teaching the lesson if user is student
+   * @return {string} [data.attended] - 1 if student attended, 0 otherwise. Will not be returned if user type is staff
    */
   getTimetable(req, res) {
     var sql = "";
@@ -158,7 +159,7 @@ class MobileApiController {
     var authObject = data.authenticationObject;
 
     if (authObject.userType == "student") {
-      sql = "SELECT l.id as lesson_id, sbj.id as subject_id, DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, subject_name, s.name as staff_name FROM lesson l";
+      sql = "SELECT l.id as lesson_id, sbj.id as subject_id, DATE_FORMAT(date_time,'%d/%m/%Y %h:%i %p') as date_time, subject_name, s.name as staff_name, IF(att.attended=1, 1, 0) as attended FROM lesson l";
       sql += " left join staff s ON l.staff_id=s.id";
       sql += " left join lesson_attendance att ON l.id=att.lesson_id";
       sql += " left join student std ON att.student_id=std.id";
@@ -241,6 +242,7 @@ class MobileApiController {
    * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
    * @return {boolean} success - Indicate succesful action
    * @return {List<object>} data - A data packet that can contain different form of objects
+   * @return {string} data.subject_id - Id of the subject taken
    * @return {string} data.subject_name - Name of the subject taken
    * @return {string} data.student_name - Name of the student taking the subject if user is staff
    * @return {double} data.attendance_percentage - Percentage of attendance for given subject
@@ -251,7 +253,7 @@ class MobileApiController {
     var authObject = data.authenticationObject;
 
     if (authObject.userType == "student") {
-      sql = "select sbj.subject_name, SUM(att.attended)/count(att.attended)*100 as attendance_percentage from student s";
+      sql = "select sbj.id as subject_id, sbj.subject_name, SUM(att.attended)/count(att.attended)*100 as attendance_percentage from student s";
       sql += " left join lesson_attendance att ON s.id = att.student_id";
       sql += " left join lesson l ON att.lesson_id=l.id";
       sql += " left join subject sbj ON l.subject_id=sbj.id";
@@ -261,7 +263,7 @@ class MobileApiController {
       sql += " GROUP BY sbj.subject_name";
     }
     else if (authObject.userType == "staff") {
-      sql = "select sbj.subject_name, s.name as student_name, SUM(att.attended)/count(att.attended)*100 as attendance_percentage from student s";
+      sql = "select sbj.id as subject_id, sbj.subject_name, s.name as student_name, SUM(att.attended)/count(att.attended)*100 as attendance_percentage from student s";
       sql += " left join lesson_attendance att ON s.id = att.student_id";
       sql += " left join lesson l ON att.lesson_id=l.id";
       sql += " left join subject sbj ON l.subject_id=sbj.id";
