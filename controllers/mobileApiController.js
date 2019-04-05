@@ -532,7 +532,7 @@ class MobileApiController {
         throw err;
       }
       else {
-        res.status(200).send({ success: true, data: result });
+        res.status(200).send({ success: true, data: result[1] });
       }
     });
   }
