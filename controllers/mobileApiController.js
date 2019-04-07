@@ -584,8 +584,6 @@ class MobileApiController {
 	
 	sql += " INSERT INTO lesson_attendance (version, attended, lesson_id, student_id)";
 	sql += " SELECT 0, b'0', LAST_INSERT_ID(), id FROM student where student_id in (" + data.studentIdList + ")";
-	
-	console.log(sql);
 
     dbConnection.query(sql, function (err, result) {
       
