@@ -14,12 +14,14 @@ router.put('/api/v1/mobileapi/getLesson', HelperController.authenticated, Mobile
 router.put('/api/v1/mobileapi/getSubjectAttendance', HelperController.authenticated, MobileApiController.getSubjectAttendance);
 router.put('/api/v1/mobileapi/getNotificationList', HelperController.authenticated, MobileApiController.getNotificationList);
 router.put('/api/v1/mobileapi/getSubjectTimetable', HelperController.authenticated, MobileApiController.getSubjectTimetable);
+router.put('/api/v1/mobileapi/getLoadAddLesson', HelperController.authenticated, MobileApiController.getLoadAddLesson);
 
 router.put('/api/v1/mobileapi/updateProfile', HelperController.authenticated, MobileApiController.updateProfile);
 router.put('/api/v1/mobileapi/generateLessonAttendanceQrCode', HelperController.authenticated, MobileApiController.generateLessonAttendanceQrCode);
 router.put('/api/v1/mobileapi/updateLessonAttendance', HelperController.authenticated, MobileApiController.updateLessonAttendance);
 router.put('/api/v1/mobileapi/createNotification', HelperController.authenticated, MobileApiController.createNotification);
 router.put('/api/v1/mobileapi/updateDeviceToken', HelperController.authenticated, MobileApiController.updateDeviceToken);
+router.put('/api/v1/mobileapi/addLesson', HelperController.authenticated, MobileApiController.addLesson);
 
 export default router;
 

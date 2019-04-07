@@ -536,7 +536,68 @@ class MobileApiController {
       }
     });
   }
+  
+  /**
+   * PUT - Get the required data for adding a lesson, for staff only.
+   * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @return {boolean} success - Indicate succesful action
+   * @return {object} List<data> - A data packet that can contain different form of objects
+   * @return {List<Subject>} data.subject_list - Has attributes Id, subject_name
+   * @return {List<Student>} data.student_list - Has attributes Id, student_id, name
+   */
+  getLoadAddLesson(req, res) {
+    var sql = "";
+    var data = req.body;
+    var authObject = data.authenticationObject;
 
+	sql = "select id, subject_name from subject order by id;";
+    sql += "select student_id, name from student order by student_id;";
+
+    dbConnection.query(sql, function (err, result) {
+      
+      if (err) {
+        res.status(200).send({ success: false });
+        throw err;
+      }
+      else {
+        res.status(200).send({ success: true, data: {subject_list: result[0], student_list: result[1]} });
+      }
+    });
+  }
+  
+  /**
+   * PUT - Create a lesson. For staff only.
+   * @param {AuthenticationObject} authenticationObject - Consist of userId and userType, all in string type
+   * @param {epoch} dateTime - Integer value of epoch for dateTime of the lesson
+   * @param {string} subjectId - Id of the subject of the lesson
+   * @param {string} studentIdList - Formatted string values of Student_id value of the students (eg. "'B001', 'B002', 'B003'")
+   * @return {boolean} success - Indicate succesful action
+   */
+  addLesson(req, res) {
+    var sql = "";
+    var data = req.body;
+    var authObject = data.authenticationObject;
+
+	sql = "INSERT INTO lesson (version, date_time, staff_id, subject_id)";
+	sql += " SELECT 0, FROM_UNIXTIME(" + data.dateTime + "), id, " + data.subjectId;
+	sql += " FROM staff where staff_id = '" + authObject.userId + "';";
+	
+	sql += " INSERT INTO lesson_attendance (version, attended, lesson_id, student_id)";
+	sql += " SELECT 0, b'0', LAST_INSERT_ID(), id FROM student where student_id in (" + data.studentIdList + ")";
+	
+	console.log(sql);
+
+    dbConnection.query(sql, function (err, result) {
+      
+      if (err) {
+        res.status(200).send({ success: false });
+        throw err;
+      }
+      else {
+        res.status(200).send({ success: true });
+      }
+    });
+  }
 }
 
 const mobileApiController = new MobileApiController();
